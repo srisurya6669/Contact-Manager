@@ -1,45 +1,69 @@
 const asyncHandler = require('express-async-handler')
-
+const Contact = require('../models/contactModel')
 // @Desc : Get All contacts
 // Route : GET /contacts
 // @Access : public
-const getAllContacts = asyncHandler((req, res) => {
-    res.status(200).json({ message: 'All contacts' })
+const getAllContacts = asyncHandler(async (req, res) => {
+    const contacts = await Contact.find({})
+    res.status(200).json(contacts)
 })
 
 // @Desc : Get single contact
 // Route : GET /contacts/:id
 // @Access : public 
-const getContact = asyncHandler((req, res) => {
-    res.status(200).json({ message: `Getting Contact with id ${req.params.id}` })
+const getContact = asyncHandler(async (req, res) => {
+    const contact = await Contact.findById(req.params.id);
+    if (!contact) {
+        res.status(404)
+        throw new Error("contact not found")
+    }
+    res.status(200).json(contact)
 })
 
 // @Desc : create contact
 // Route : POST /contacts
 // @Access : public 
-const createContact = asyncHandler((req, res) => {
+const createContact = asyncHandler(async (req, res) => {
     const { name, email, phone } = req.body;
     if (!name || !email || !phone) {
         res.status(400)
         throw new Error('All fields are mandatory')
     }
-    res.status(200).json({ message: 'Create a Contact' })
+    const contact = await Contact.create({
+        name,
+        email,
+        phone
+    })
+    res.status(200).json(contact)
 })
 
 
 // @Desc : update a contact
 // Route : PUT /contacts/:id
 // @Access : public 
-const updateContact = asyncHandler((req, res) => {
-    res.status(200).json({ message: `Updating Contact with id ${req.params.id}` })
+const updateContact = asyncHandler(async (req, res) => {
+    const contact = await Contact.findById(req.params.id);
+    if (!contact) {
+        res.status(404)
+        throw new Error("contact not found")
+    }
+
+    const updatedContact = await Contact.findByIdAndUpdate(req.params.id, req.body, { new: true })
+    res.status(200).json(updatedContact)
 })
 
 
 // @Desc : delete a contact
 // Route : DELETE /contacts/:id
 // @Access : public 
-const deleteContact = asyncHandler((req, res) => {
-    res.status(200).json({ message: `Deleting Contact with id ${req.params.id}` })
+const deleteContact = asyncHandler(async (req, res) => {
+    const contact = await Contact.findById(req.params.id);
+    if (!contact) {
+        res.status(404)
+        throw new Error("contact not found")
+    }
+    const deletedContact = await Contact.findByIdAndDelete(req.params.id);
+    res.status(200).json(deletedContact)
 })
 
 module.exports = { getAllContacts, getContact, createContact, updateContact, deleteContact }

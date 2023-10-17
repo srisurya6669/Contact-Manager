@@ -1,6 +1,7 @@
 const express = require('express');
 const dotenv = require('dotenv').config();
 const contactRoute = require('./routes/contactRouter')
+const userRoute = require('./routes/userRouter')
 const bodyParser = require('body-parser')
 const errorHandler = require('./middleware/errorHandler')
 const connectDB = require('./config/dbConnection')
@@ -14,6 +15,7 @@ const PORT = process.env.PORT || 5000
 
 app.use(bodyParser.json())
 app.use(contactRoute)
+app.use(userRoute)
 app.use(errorHandler)
 
 app.listen(PORT, () => {
