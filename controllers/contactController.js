@@ -2,15 +2,15 @@ const asyncHandler = require('express-async-handler')
 const Contact = require('../models/contactModel')
 // @Desc : Get All contacts
 // Route : GET /contacts
-// @Access : public
+// @Access : private
 const getAllContacts = asyncHandler(async (req, res) => {
-    const contacts = await Contact.find({})
+    const contacts = await Contact.find({ user_id: req.user.id })
     res.status(200).json(contacts)
 })
 
 // @Desc : Get single contact
 // Route : GET /contacts/:id
-// @Access : public 
+// @Access : private 
 const getContact = asyncHandler(async (req, res) => {
     const contact = await Contact.findById(req.params.id);
     if (!contact) {
@@ -22,17 +22,19 @@ const getContact = asyncHandler(async (req, res) => {
 
 // @Desc : create contact
 // Route : POST /contacts
-// @Access : public 
+// @Access : private 
 const createContact = asyncHandler(async (req, res) => {
     const { name, email, phone } = req.body;
     if (!name || !email || !phone) {
         res.status(400)
         throw new Error('All fields are mandatory')
     }
+    console.log(req.user)
     const contact = await Contact.create({
         name,
         email,
-        phone
+        phone,
+        user_id: req.user.id
     })
     res.status(200).json(contact)
 })
@@ -40,7 +42,7 @@ const createContact = asyncHandler(async (req, res) => {
 
 // @Desc : update a contact
 // Route : PUT /contacts/:id
-// @Access : public 
+// @Access : private 
 const updateContact = asyncHandler(async (req, res) => {
     const contact = await Contact.findById(req.params.id);
     if (!contact) {
@@ -55,7 +57,7 @@ const updateContact = asyncHandler(async (req, res) => {
 
 // @Desc : delete a contact
 // Route : DELETE /contacts/:id
-// @Access : public 
+// @Access : private 
 const deleteContact = asyncHandler(async (req, res) => {
     const contact = await Contact.findById(req.params.id);
     if (!contact) {

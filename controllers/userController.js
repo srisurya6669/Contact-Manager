@@ -1,6 +1,8 @@
 const asyncHandler = require('express-async-handler')
 const User = require('../models/userModel')
 const bcrypt = require('bcrypt')
+const jwt = require("jsonwebtoken");
+
 // @Desc : register a User
 // Route : POST /register
 // @Access : public
@@ -33,23 +35,37 @@ const registerUser = asyncHandler(async (req, res) => {
 
 // @Desc : login a User
 // Route : POST /login
-// @Access : public
+// @Access : private
 const loginUser = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
-
-    const user = await User.findOne({ email, password })
-    if (!user) {
-        res.status(404)
-        throw new Error('user not found')
+    if (!email || !password) {
+        res.status(400);
+        throw new Error("All fields are required!")
     }
-    res.status(200).json(user)
+    const user = await User.findOne({ email })
+    if (user && (await bcrypt.compare(password, user.password))) {
+        const accessToken = jwt.sign({
+            user: {
+                username: user.username,
+                email: user.email,
+                id: user.id
+            }
+        }, process.env.ACCESS_TOKEN_SECRET,
+            { expiresIn: "15m" }
+        )
+        res.status(200).json({ accessToken });
+    }
+    else {
+        res.status(401)
+        throw new Error("email or password not vaild")
+    }
 })
 
 // @Desc : get current User info
 // Route : GET /current
 // @Access : private
 const currentUser = asyncHandler(async (req, res) => {
-    res.status(200).json({ message: "current user" });
+    res.json(req.user);
 })
 
 module.exports = { registerUser, loginUser, currentUser }
